@@ -2,9 +2,9 @@ local SynioxLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Syn
 local displayName = game.Players.LocalPlayer.DisplayName
 
 SynioxLib:StartFlowRGB(
-    Color3.fromRGB(0, 255, 0), -- Parlak Neon Yeşil
-    Color3.fromRGB(0, 100, 0), -- Koyu Orman Yeşili
-    Color3.fromRGB(0, 0, 0)   -- Tam Siyah
+    Color3.fromRGB(0, 255, 0), 
+    Color3.fromRGB(0, 100, 0), 
+    Color3.fromRGB(0, 0, 0)
 )
 
 local Window = SynioxLib:CreateWindow({
@@ -17,3 +17,85 @@ local Window = SynioxLib:CreateWindow({
 })
 
 local Main = Window:AddTab({ Title = "Main", Icon = "home" })
+
+local function generateReport(sourceCode, sourceType, sourceUrl)
+    local links = {}
+    local webhooks = {}
+    
+    for wh in sourceCode:gmatch("https://discord%.com/api/webhooks/%d+/[%w%-_]+") do
+        table.insert(webhooks, wh)
+    end
+    
+    for link in sourceCode:gmatch("https?://[%w%./%-%?%=%&]+") do
+        if not link:find("discord.com") then
+            table.insert(links, link)
+        end
+    end
+
+    print("\n" .. string.rep("=", 50))
+    print("📋 YAKALAMA RAPORU (" .. sourceType .. ")")
+    if sourceUrl then print("Ana Kaynak: " .. sourceUrl) end
+
+    if #links > 0 then
+        for i, l in ipairs(links) do print("Link" .. (i > 1 and i or "") .. ": " .. l) end
+    else
+        print("Link: Bulunamadı")
+    end
+
+    if #webhooks > 0 then
+        for i, w in ipairs(webhooks) do print("Webhook" .. (i > 1 and i or "") .. ": " .. w) end
+    else
+        print("Webhook: Temiz")
+    end
+
+    print("\nKod:")
+    print(tostring(sourceCode))
+    print(string.rep("=", 50) .. "\n")
+end
+
+local oldHttpGet
+oldHttpGet = hookfunction(game.HttpGet, function(self, url, ...)
+    local content = oldHttpGet(self, url, ...)
+    if url:find("railway.app") or url:find("v1/scripts") or url:find("raw.github") then
+        generateReport(content, "HTTP GET", url)
+        if setclipboard then setclipboard(tostring(content)) end
+    end
+    return content
+end)
+
+local oldLoadstring
+oldLoadstring = hookfunction(loadstring, function(code, chunkname)
+    generateReport(code, "LOADSTRING", nil)
+    return oldLoadstring(code, chunkname)
+end)
+
+local targetSource = ""
+
+Main:AddInput("ScrapeInput", {
+    Title = "Source (Link veya Kod)",
+    Default = "",
+    Placeholder = "Buraya yapıştır...",
+    Numeric = false,
+    Finished = true,
+    Callback = function(Value)
+        targetSource = Value
+    end
+})
+
+Main:AddButton({
+    Title = "Scrape İşlemini Başlat",
+    Description = "Yazılan kaynağı çalıştırır ve verileri çeker.",
+    Callback = function()
+        if targetSource ~= "" then
+            print("--- [İŞLEM BAŞLATILDI] ---")
+            local func, err = loadstring(targetSource)
+            if func then
+                task.spawn(func)
+            else
+                warn("Hata: Geçersiz kod veya link! " .. tostring(err))
+            end
+        else
+            warn("Lütfen önce bir kaynak girin!")
+        end
+    end
+})
