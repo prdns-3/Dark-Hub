@@ -1,0 +1,17 @@
+local SynioxLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/SynioxStudios/ByYSF-FLuent-U--V4/refs/heads/main/SynioxUi.txt"))()
+local displayName = game.Players.LocalPlayer.DisplayName
+
+SynioxLib:StartFlowRGB(
+    Color3.fromRGB(0, 255, 0), -- Parlak Neon Yeşil
+    Color3.fromRGB(0, 100, 0), -- Koyu Orman Yeşili
+    Color3.fromRGB(0, 0, 0)   -- Tam Siyah
+)
+
+local Window = SynioxLib:CreateWindow({
+    Title = "Dark Hub || WELCOME - " .. displayName,
+    SubTitle = "V1",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(450, 320),
+    Acrylic = true,
+    Theme = "SynioxHub"
+})
