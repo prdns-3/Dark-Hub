@@ -15,3 +15,5 @@ local Window = SynioxLib:CreateWindow({
     Acrylic = true,
     Theme = "SynioxHub"
 })
+
+local Main = Window:AddTab({ Title = "Main", Icon = "home" })
